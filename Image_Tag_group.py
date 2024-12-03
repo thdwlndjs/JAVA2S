@@ -303,12 +303,53 @@ class PhotoProcessor:
         if not any(data["File Name"] == file_name for data in self.excel_data):
             self.excel_data.append({"File Name": file_name, "Tags": ", ".join(tags)})
 
-    def save_to_db(self, img_path, tags):
-        """태그를 데이터베이스에 저장"""
-        try:
-            # 이미지 파일 이름 추출
-            file_name = os.path.basename(img_path)
+        # 추가: 태그 저장 함수 (Image_Tag_group.py)
+    def save_tags_to_db(tags, db_name):
+        connection = create_connection(db_name)
+        if connection:
+            try:
+                cursor = connection.cursor()
+                for tag in tags:
+                    insert_tag_query = """
+                    INSERT INTO Tags (name)
+                    VALUES (?)
+                    ON DUPLICATE KEY UPDATE id=id;
+                    """
+                    cursor.execute(insert_tag_query, (tag,))
+                connection.commit()
+            except mariadb.Error as e:
+                print(f"태그 저장 오류: {e}")
+            finally:
+                cursor.close()
+                connection.close()
 
+        # 사용자 태그 선호도 업데이트 함수
+    def update_user_tag_preference(user_id, tag, db_name):
+        connection = create_connection(db_name)
+        if connection:
+            try:
+                cursor = connection.cursor()
+                # 태그 ID 조회
+                get_tag_query = "SELECT id FROM Tags WHERE name = ?"
+                cursor.execute(get_tag_query, (tag,))
+                tag_id = cursor.fetchone()
+                if tag_id:
+                    # 사용자-태그 관계 업데이트
+                    update_query = """
+                    INSERT INTO User_Tag_Relationship (user_id, tag_id, weight)
+                    VALUES (?, ?, 1)
+                    ON DUPLICATE KEY UPDATE weight = weight + 1;  # **빨간색**
+                    """
+                    cursor.execute(update_query, (user_id, tag_id[0]))
+                    connection.commit()
+            except mariadb.Error as e:
+                print(f"사용자 태그 선호도 업데이트 오류: {e}")
+            finally:
+                cursor.close()
+                connection.close()
+
+
+<<<<<<< HEAD
             # Photos 테이블에 데이터 삽입
             self.cursor.execute("INSERT INTO contents (file_name, tags) VALUES (?, ?)", 
                                 (file_name, ",".join(tags)))
@@ -316,6 +357,8 @@ class PhotoProcessor:
             print(f"'{file_name}'의 태그가 데이터베이스에 저장되었습니다.")
         except mariadb.Error as e:
             print(f"데이터베이스 저장 중 오류 발생: {e}")
+=======
+>>>>>>> 2b099469522686c73744c0e3caed6ecf25c1a0b2
 
 
     def create_folder_and_move_image(self, img_path, tags):
