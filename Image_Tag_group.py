@@ -310,7 +310,7 @@ class PhotoProcessor:
             file_name = os.path.basename(img_path)
 
             # Photos 테이블에 데이터 삽입
-            self.cursor.execute("INSERT INTO Photos (file_name, tags) VALUES (?, ?)", 
+            self.cursor.execute("INSERT INTO contents (file_name, tags) VALUES (?, ?)", 
                                 (file_name, ",".join(tags)))
             self.db.commit()
             print(f"'{file_name}'의 태그가 데이터베이스에 저장되었습니다.")
@@ -364,11 +364,10 @@ class PhotoProcessor:
 if __name__ == "__main__":
     # **사용자가 직접 설정해야 할 부분**
     db_config = {
-        "host": "localhost",  # DB 호스트
-        "user": "photo_user",  # 사용자명
-        "password": "bobby1412",  # 비밀번호
-        "database": "photo_tags",  # 데이터베이스 이름
-        "port": 3306  # 포트 번호
+            host="localhost",        # MariaDB 서버 주소
+            user="root",             # MariaDB 사용자 이름
+            password="1234",         # MariaDB 비밀번호
+            database=database 
     }
 
     folder_path = "/Users/jeongjigang/Desktop/ImageAll/서촌핫플"  # 처리할 이미지 폴더
